@@ -1,5 +1,6 @@
- [![Python Package using Conda](https://github.com/salemon/tactile_intelligent_manipulate/actions/workflows/python-package-conda.yml/badge.svg)](https://github.com/salemon/tactile_intelligent_manipulate/actions/workflows/python-package-conda.yml) # Tactile Intelligent Manipulate
-
+ [![Python Package using Conda](https://github.com/salemon/tactile_intelligent_manipulate/actions/workflows/python-package-conda.yml/badge.svg)](https://github.com/salemon/tactile_intelligent_manipulate/actions/workflows/python-package-conda.yml) <br/>
+ 
+# Tactile Intelligent Manipulate
 
 ## Marker Tracking Algorithm
 
