@@ -1,0 +1,7 @@
+numba
+numpy
+open3d
+opencv-contrib-python
+opencv_python_headless
+scipy
+torch
