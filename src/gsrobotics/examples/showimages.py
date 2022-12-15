@@ -61,6 +61,7 @@ def main(argv):
         # the device ID can change after chaning the usb ports.
         # on linux run, v4l2-ctl --list-devices, in the terminal to get the device ID for camera
         cam_id = gsdevice.get_camera_id("Arducam USB Camera")
+        cam_id = 0
         dev = gsdevice.Camera(finger, cam_id)
 
     dev.connect()
