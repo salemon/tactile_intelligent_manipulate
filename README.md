@@ -1,7 +1,7 @@
-# tactile_intelligent_manipulate
+# Tactile Intelligent Manipulate
 
 
-# Marker Tracking Algorithm
+## Marker Tracking Algorithm
 
 ## Requirement
 
