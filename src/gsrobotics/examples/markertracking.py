@@ -19,6 +19,7 @@ def gkern(l=5, sig=1.):
     kernel = np.exp(-0.5 * (np.square(xx) + np.square(yy)) / np.square(sig))
     return kernel / np.sum(kernel)
 
+
 def normxcorr2(template, image, mode="same"):
     """
     Input arrays should be floating point numbers.
@@ -37,7 +38,8 @@ def normxcorr2(template, image, mode="same"):
     ar = np.flipud(np.fliplr(template))
     out = fftconvolve(image, ar.conj(), mode=mode)
     image = fftconvolve(np.square(image), a1, mode=mode) - \
-            np.square(fftconvolve(image, a1, mode=mode)) / (np.prod(template.shape))
+        np.square(fftconvolve(image, a1, mode=mode)) / \
+        (np.prod(template.shape))
     # Remove small machine precision errors after subtraction
     image[np.where(image < 0)] = 0
     template = np.sum(np.square(template))
@@ -48,12 +50,15 @@ def normxcorr2(template, image, mode="same"):
     return out
 
 # find the marker in the image
+
+
 def find_marker(gray):
-    adjusted = cv2.convertScaleAbs(gray, alpha=3, beta=0)# convert to grayscale image
+    # convert to grayscale image
+    adjusted = cv2.convertScaleAbs(gray, alpha=3, beta=0)
     mask = cv2.inRange(adjusted, 255, 255)
     ''' normalized cross correlation '''
     template = gkern(l=20, sig=5)
-    
+
     nrmcrimg = normxcorr2(template, mask)
     ''''''''''''''''''''''''''''''''''''
     kernel = np.ones((3, 3), np.uint8)
@@ -61,7 +66,7 @@ def find_marker(gray):
     a = nrmcrimg
     b = 2 * ((a - a.min()) / (a.max() - a.min())) - 1
     b = (b - b.min()) / (b.max()-b.min())
-    mask = np.asarray(b<0.50)
+    mask = np.asarray(b < 0.50)
     return (mask*255).astype('uint8')
 
 
@@ -83,16 +88,16 @@ def find2dpeaks(res):
     maxima[diff == 0] = 0
 
     labeled, num_objects = ndimage.label(maxima)
-    xy = np.array(ndimage.center_of_mass(img3, labeled, range(1, num_objects + 1)))
+    xy = np.array(ndimage.center_of_mass(
+        img3, labeled, range(1, num_objects + 1)))
 
-    # plt.imshow(img3)
-    # plt.autoscale(False)
-    # plt.plot(xy[:, 1], xy[:, 0], 'ro', markersize=2)
-    # plt.show()
-    # plt.close()
+    plt.imshow(img3)
+    plt.autoscale(False)
+    plt.plot(xy[:, 1], xy[:, 0], 'ro', markersize=2)
+    plt.show()
+    plt.close()
 
     return xy
-
 
 
 if __name__ == "__main__":
@@ -113,24 +118,49 @@ if __name__ == "__main__":
         gs = gsdevice.Camera(gsdevice.Finger.R1, 0)
         WHILE_COND = 1
     else:
-        cap = cv2.VideoCapture('marker.avi') # choose to read from video or camera
+        # choose to read from video or camera
+        cap = cv2.VideoCapture('marker.avi')
         WHILE_COND = cap.isOpened()
 
     if SAVE_VIDEO_FLAG:
         fourcc = cv2.VideoWriter_fourcc(*'XVID')
-        out = cv2.VideoWriter('flow.mov',fourcc, 60.0, (imgw,imgh)) # The fps depends on CPU
+        out = cv2.VideoWriter('flow.mov', fourcc, 60.0,
+                              (imgw, imgh))  # The fps depends on CPU
 
     gs.connect()
     if USE_R1:
-        f0 = gs.get_image((0,0,320,240))
+        f0 = gs.get_image((0, 0, 320, 240))
+        # cv2.imshow('f0', f0)
         f0 = cv2.resize(f0, (imgw, imgh))
         f0 = f0[40:460, 50:620]
+        # cv2.imshow('f0', f0)
         f0gray = cv2.cvtColor(f0, cv2.COLOR_BGR2GRAY)
+        cv2.imshow('f0gray', f0gray)
     else:
         ret, f0 = cap.read()
 
     # find mask
-    mask = find_marker(f0gray)
+    # mask = find_marker(f0gray)
+    ###
+    adjusted = cv2.convertScaleAbs(f0gray, alpha=3, beta=0)
+    # cv2.imshow('adjusted', adjusted)
+    mask = cv2.inRange(adjusted, 255, 255)
+    cv2.imshow('mask_djusted', mask)
+    ''' normalized cross correlation '''
+    template = gkern(l=200, sig=5)
+    cv2.imshow('template', template)
+    nrmcrimg = normxcorr2(template, mask)
+    ''''''''''''''''''''''''''''''''''''
+    kernel = np.ones((9, 9), np.uint8)
+    dilation = cv2.dilate(mask, kernel, iterations=1)
+    a = nrmcrimg
+    b = 2 * ((a - a.min()) / (a.max() - a.min())) - 1
+    b = (b - b.min()) / (b.max()-b.min())
+    mask = np.asarray(b < 0.2)
+    mask = (mask*255).astype('uint8')
+
+    cv2.imshow('mask1', mask)
+
     # find marker centers
     mc0 = find2dpeaks(mask)
     mc0[:, [0, 1]] = mc0[:, [1, 0]]
@@ -144,7 +174,7 @@ if __name__ == "__main__":
             t0 = time.time()
 
             if USE_R1:
-                curr = gs.get_image((0,0,320,240))
+                curr = gs.get_image((0, 0, 320, 240))
                 curr = cv2.resize(curr, (imgw, imgh))
                 curr = curr[40:460, 50:620]
                 currgray = cv2.cvtColor(curr, cv2.COLOR_BGR2GRAY)
@@ -155,25 +185,28 @@ if __name__ == "__main__":
                 mc[:, [0, 1]] = mc[:, [1, 0]]
                 for i in range(mc.shape[0]):
                     x0, y0 = int(mc[i][0]), int(mc[i][1])
-                    cv2.circle(mask, (x0, y0), color=(0, 0, 0), radius=1, thickness=2)
+                    cv2.circle(mask, (x0, y0), color=(
+                        0, 0, 0), radius=1, thickness=2)
             else:
                 ret, curr = cap.read()
 
-            if count==0:
+            if count == 0:
                 prev = f0
                 # mc = mc0
                 count += 1
 
-            p2, st2, err2 = cv2.calcOpticalFlowPyrLK(f0, curr, mc0.astype('float32'), None, **lk_params)
+            p2, st2, err2 = cv2.calcOpticalFlowPyrLK(
+                f0, curr, mc0.astype('float32'), None, **lk_params)
             # p2, st2, err2 = cv2.calcOpticalFlowPyrLK(prev, curr, mc0copy.astype('float32'), mc.astype('float32'), **lk_params)
 
             # Select good points
             # good_p2 = p2[(st2==1).reshape(-1),:]
 
             for i in range(p2.shape[0]):
-                x0,y0 = int( mc0[i][0]),int(mc0[i][1])
-                x1,y1 = int(p2[i][0]), int(p2[i][1])
-                cv2.arrowedLine(curr, (x0,y0), (x1,y1), (0, 255, 255), thickness=2, tipLength=0.25)
+                x0, y0 = int(mc0[i][0]), int(mc0[i][1])
+                x1, y1 = int(p2[i][0]), int(p2[i][1])
+                cv2.arrowedLine(curr, (x0, y0), (x1, y1),
+                                (0, 255, 255), thickness=2, tipLength=0.25)
                 # x0, y0 = int(mc0[i][0]), int(mc0[i][1])
                 # cv2.circle(curr,(x0,y0), color=(0, 0, 255),radius=1,thickness=1)
 
@@ -194,7 +227,7 @@ if __name__ == "__main__":
             cv2.destroyAllWindows()
 
     except KeyboardInterrupt:
-            print('Interrupted!')
-            gs.stop_video()
+        print('Interrupted!')
+        gs.stop_video()
 
     gs.stop_video()

@@ -16,22 +16,21 @@ gelsight_version = 'Bnz'
 # gelsight_version = 'HSR'
 
 # cap = cv2.VideoCapture("data/GelSight_Twist_Test.mov")
-cap = cv2.VideoCapture("data/GelSight_Shear_Test.mov")
-# cap = cv2.VideoCapture(1)
-
-
+# cap = cv2.VideoCapture("data/GelSight_Shear_Test.mov")
+cap = cv2.VideoCapture(0)
 # Resize scale for faster image processing
+print('q to quit')
 setting.init()
 RESCALE = setting.RESCALE
 
 # Create Mathing Class
 m = find_marker.Matching(
-    N_=setting.N_, 
-    M_=setting.M_, 
-    fps_=setting.fps_, 
-    x0_=setting.x0_, 
-    y0_=setting.y0_, 
-    dx_=setting.dx_, 
+    N_=setting.N_,
+    M_=setting.M_,
+    fps_=setting.fps_,
+    x0_=setting.x0_,
+    y0_=setting.y0_,
+    dx_=setting.dx_,
     dy_=setting.dy_)
 """
 N_, M_: the row and column of the marker array
@@ -43,17 +42,18 @@ dx_, dy_: the horizontal and vertical interval between adjacent markers
 fourcc = cv2.VideoWriter_fourcc(*'XVID')
 
 if gelsight_version == 'HSR':
-    out = cv2.VideoWriter('output.mp4',fourcc, 30.0, (215,215))
+    out = cv2.VideoWriter('output.mp4', fourcc, 30.0, (215, 215))
 else:
-    out = cv2.VideoWriter('output.mp4',fourcc, 30.0, (1280//RESCALE,720//RESCALE))
+    out = cv2.VideoWriter('output.mp4', fourcc, 30.0,
+                          (1280//RESCALE, 720//RESCALE))
 
 # for i in range(30): ret, frame = cap.read()
 
-while(True):
+while (True):
 
     # capture frame-by-frame
     ret, frame = cap.read()
-    if not(ret):
+    if not (ret):
         break
 
     frame_raw = frame.copy()
@@ -70,7 +70,6 @@ while(True):
 
     # find marker centers
     mc = marker_dectection.marker_center(mask, frame)
-
 
     if calibrate == False:
         tm = time.time()
@@ -98,11 +97,11 @@ while(True):
     mask_img = cv2.merge((mask_img, mask_img, mask_img))
 
     # cv2.imshow('raw',frame_raw)
-    cv2.imshow('frame',frame)
+    cv2.imshow('frame', frame)
 
     if calibrate:
-        # Display the mask 
-        cv2.imshow('mask',mask_img)
+        # Display the mask
+        cv2.imshow('mask', mask_img)
 
     out.write(frame)
 
